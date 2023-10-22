@@ -21,8 +21,14 @@ import ru.simbirgo.services.AccountDetailsServiceImpl;
 
 @Configuration
 @EnableMethodSecurity
-
 public class WebSecurityConfig {
+    String[] pathSwagger = new String[] {
+            "/swagger-ui/index.html",
+            "/v3/api-docs/", "/swagger-ui",
+            "/v2/api-docs", "/swagger-resources/configuration/ui",
+            "/swagger-resources", "/swagger-resources/configuration/security",
+            "/swagger-ui.html", "/webjars/**"
+    };
     @Autowired
     AccountDetailsServiceImpl accountDetailsService;
 
@@ -60,8 +66,13 @@ public class WebSecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/account/signin").permitAll()
+                        auth
+                                .requestMatchers("/api/account/signin").permitAll()
+                                .requestMatchers(pathSwagger).permitAll()
                                 .requestMatchers("/api/account/signup").permitAll()
+                                .requestMatchers("/swagger-ui/**").permitAll()
+                                .requestMatchers("/v3/**").permitAll()
+                                .requestMatchers("/swagger-ui/index.html").permitAll()
                                 .anyRequest().authenticated()
                 );
 
