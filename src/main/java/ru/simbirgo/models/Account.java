@@ -14,16 +14,24 @@ public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false, unique = true)
+    @Column(name="username", nullable = false, unique = true)
     private String username;
-    @Column(nullable = false)
+    @Column(name="password", nullable = false)
     private String password;
+    @Column(name="balance")
     private Double balance;
+    @Column(name="is_admin")
     private Boolean isAdmin;
 
     public Account(String username, String password, Double balance, Boolean isAdmin){
         this.username = username;
         this.password = password;
+        this.balance=balance;
+        this.isAdmin = isAdmin;
+    }
+
+    public Account(String username, Double balance, Boolean isAdmin){
+        this.username = username;
         this.balance=balance;
         this.isAdmin = isAdmin;
     }
