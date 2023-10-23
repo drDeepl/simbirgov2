@@ -4,15 +4,16 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import ru.simbirgo.services.AccountDetailsImpl;
 import io.jsonwebtoken.*;
 
 import java.util.Date;
-import java.util.Map;
 
 @Component
 public class JwtUtils {
@@ -25,7 +26,7 @@ public class JwtUtils {
     private int jwtExpirationMs;
 
     public String generateJwtToken(AccountDetailsImpl accountPrincipal) {
-        boolean isAdminAccount  = accountPrincipal.getAuthorities().toArray()[0] == "ROLE_ADMIN";
+        boolean isAdminAccount = accountPrincipal.getAuthorities().toArray()[0] == "ROLE_ADMIN";
         return generateTokenFromUsername(accountPrincipal.getUsername(), isAdminAccount);
     }
 
@@ -45,6 +46,7 @@ public class JwtUtils {
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
     }
+
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
@@ -63,5 +65,12 @@ public class JwtUtils {
 
         return false;
     }
+
+    public boolean getIsAdminFromAccountDetails(AccountDetailsImpl accountDetails) {
+        String accountRole = accountDetails.getAuthorities().toArray()[0].toString();
+        boolean isAdmin = StringUtils.equals(accountRole, "ROLE_ADMIN");
+        return isAdmin;
+    }
+
 
 }

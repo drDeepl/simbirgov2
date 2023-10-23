@@ -41,4 +41,21 @@ public class AccountService {
 
         return accounts;
     }
+
+    public void updateAccountById(long accountId, String username, String password, Double balance, boolean isAdmin){
+        Account account = accountRepository.findById(accountId).get();
+        account.setUsername(username);
+        account.setPassword(password);
+        account.setBalance(balance);
+        account.setIsAdmin(isAdmin);
+        accountRepository.save(account);
+
+    }
+
+    public void hesoyamBalance(long id){
+        Account account = accountRepository.findById(id).get();
+        double currentBalance = account.getBalance();
+        account.setBalance(currentBalance + 250000);
+        accountRepository.save(account);
+    }
 }

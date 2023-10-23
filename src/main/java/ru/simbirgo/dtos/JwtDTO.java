@@ -7,15 +7,12 @@ import lombok.Data;
 @AllArgsConstructor
 public class JwtDTO {
 
-    private String token;
-    private String username;
-
     private String type = "Bearer";
+    private String token;
     private String refreshToken;
 
-    public JwtDTO(String token, String username, String refreshToken){
+    public JwtDTO(String token, String refreshToken){
         this.token = token;
-        this.username = username;
         this.refreshToken = refreshToken;
     }
 

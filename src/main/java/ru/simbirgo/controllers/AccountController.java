@@ -31,11 +31,7 @@ import ru.simbirgo.services.AccountDetailsImpl;
 import ru.simbirgo.services.AccountService;
 import ru.simbirgo.services.RefreshTokenService;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-@Tag(name="Account")
+@Tag(name="AccountController")
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/account")
@@ -69,7 +65,7 @@ public class AccountController {
         String jwt = jwtUtils.generateJwtToken(accountDetails);
 
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(accountDetails.getId());
-        return ResponseEntity.ok(new JwtDTO(jwt,accountDetails.getUsername(), refreshToken.getToken()));
+        return ResponseEntity.ok(new JwtDTO(jwt, refreshToken.getToken()));
     }
 
     @PostMapping("/signup")
@@ -79,7 +75,7 @@ public class AccountController {
         }
 
 
-        Account account = new Account(signUpRequest.getUsername(), encoder.encode(signUpRequest.getPassword()),  signUpRequest.getBalance(), signUpRequest.getIsAdmin());
+        Account account = new Account(signUpRequest.getUsername(), encoder.encode(signUpRequest.getPassword()));
         accountRepository.save(account);
 
         return ResponseEntity.ok(new MessageDTO("Пользователь зарегистирован!"));
@@ -137,7 +133,6 @@ public class AccountController {
         catch(AccountExistsException e){
             return new ResponseEntity<>(new AppException(HttpStatus.CONFLICT.value(), String.format("аккаунт с именем пользователя %s уже существует")), HttpStatus.CONFLICT);
         }
-
 
     }
 

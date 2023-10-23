@@ -20,7 +20,8 @@ public class Account {
     private String password;
     @Column(name="balance")
     private Double balance;
-    @Column(name="is_admin")
+    @Column(name="is_admin", nullable = false)
+
     private Boolean isAdmin;
 
     public Account(String username, String password, Double balance, Boolean isAdmin){
@@ -34,6 +35,11 @@ public class Account {
         this.username = username;
         this.balance=balance;
         this.isAdmin = isAdmin;
+    }
+
+    public Account(String username, String password){
+        this.username = username;
+        this.password = password;
     }
 
 }
