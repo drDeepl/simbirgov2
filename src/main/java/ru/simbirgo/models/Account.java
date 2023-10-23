@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @NoArgsConstructor
-
 @Table(name="accounts")
 public class Account {
     @Id
