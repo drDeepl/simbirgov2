@@ -1,10 +1,13 @@
-package ru.simbirgo.payloads;
+package ru.simbirgo.dtos;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.simbirgo.models.ETransportType;
+import ru.simbirgo.payloads.CreateTransportAdminRequest;
 
 @Data
-public class CreateTransportAdminRequest {
+@AllArgsConstructor
+public class TransportDTO{
+    private Long id;
     private Long ownerId;
     private Boolean canBeRented;
     private String transportType;
@@ -16,5 +19,4 @@ public class CreateTransportAdminRequest {
     private Double longitude;
     private Double minutePrice;
     private Double dayPrice;
-
 }

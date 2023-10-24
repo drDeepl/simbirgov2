@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -13,15 +15,19 @@ public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(name="username", nullable = false, unique = true)
     private String username;
+
     @Column(name="password", nullable = false)
     private String password;
+
     @Column(name="balance")
     private Double balance;
-    @Column(name="is_admin", nullable = false)
 
+    @Column(name="is_admin", nullable = false, columnDefinition="BOOLEAN DEFAULT false")
     private Boolean isAdmin;
+
 
     public Account(String username, String password, Double balance, Boolean isAdmin){
         this.username = username;

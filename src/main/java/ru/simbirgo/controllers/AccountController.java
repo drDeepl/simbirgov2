@@ -109,7 +109,7 @@ public class AccountController {
         String username = accountDetails.getUsername();
         Account account = accountRepository.findByUsername(username).get();
         if(account != null){
-            AccountDTO accountDTO = new AccountDTO(account.getUsername(),account.getIsAdmin(), account.getBalance());
+            AccountDTO accountDTO = new AccountDTO(account.getId(), account.getUsername(),account.getIsAdmin(), account.getBalance());
             return ResponseEntity.ok(accountDTO);
         }
 

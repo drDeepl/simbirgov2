@@ -7,6 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class AccountDTO {
 
+    private Long id;
     private String username;
     private Boolean isAdminl;
     private Double balance;

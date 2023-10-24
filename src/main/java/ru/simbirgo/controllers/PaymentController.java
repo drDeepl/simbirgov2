@@ -1,5 +1,6 @@
 package ru.simbirgo.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,8 @@ public class PaymentController {
 
     @Autowired
     JwtUtils jwtUtils;
+
+    @Operation(summary="добавление 250 000 денежных единиц к текущему балансу аккаунта")
     @PostMapping("/hesoyam/{accountId}")
     public ResponseEntity<?> addedBalanceToAccount(@PathVariable long accountId){
         AccountDetailsImpl accountDetails = (AccountDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
