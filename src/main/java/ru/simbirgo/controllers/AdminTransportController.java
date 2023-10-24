@@ -48,7 +48,7 @@ public class AdminTransportController {
     @Autowired
     JwtUtils jwtUtils;
 
-    @Operation(summary="получение списка всех транспортных средств. TODO: owner ID is number")
+    @Operation(summary="получение списка всех транспортных средств")
     @GetMapping("")
     public ResponseEntity<List<Transport>> findTransports(@RequestBody FindTransportsRequest findTransportsRequest){
         LOGGER.info("FIND TRANSPORTS");

@@ -1,5 +1,6 @@
 package ru.simbirgo.models;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,6 +26,7 @@ public class Account {
     @Column(name="balance")
     private Double balance;
 
+    @Schema(example = "false")
     @Column(name="is_admin", nullable = false, columnDefinition="BOOLEAN DEFAULT false")
     private Boolean isAdmin;
 
