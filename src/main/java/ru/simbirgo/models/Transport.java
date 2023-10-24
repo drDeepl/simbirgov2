@@ -26,7 +26,7 @@ public class Transport {
     @ManyToOne(fetch = FetchType.LAZY)
     private Account ownerId;
 
-    @Column(name="can_be_ranted")
+    @Column(name="can_be_ranted", nullable = false)
     private Boolean canBeRented;
 
 //    @Enumerated(EnumType.STRING)

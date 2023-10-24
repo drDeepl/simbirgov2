@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.simbirgo.config.jwt.JwtUtils;
 import ru.simbirgo.dtos.MessageDTO;
 import ru.simbirgo.dtos.TransportDTO;
+import ru.simbirgo.exceptions.AccountExistsException;
+import ru.simbirgo.exceptions.AccountNotExistsException;
 import ru.simbirgo.exceptions.AppException;
 import ru.simbirgo.exceptions.TransportNotExistsException;
 import ru.simbirgo.models.ETransportType;
@@ -26,6 +28,7 @@ import ru.simbirgo.repositories.interfaces.TransportI;
 import ru.simbirgo.services.AccountService;
 import ru.simbirgo.services.TransportService;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -52,8 +55,14 @@ public class AdminTransportController {
     @GetMapping("")
     public ResponseEntity<List<Transport>> findTransports(@RequestBody FindTransportsRequest findTransportsRequest){
         LOGGER.info("FIND TRANSPORTS");
-        List<Transport> transports = transportService.findTransports(findTransportsRequest.getStart(), findTransportsRequest.getCount(), findTransportsRequest.getTransportType().name());
+        try{
+        List<Transport> transports = transportService.findTransports(findTransportsRequest.getStart(), findTransportsRequest.getCount(), findTransportsRequest.getTransportType());
         return  ResponseEntity.ok(transports);
+        }
+        catch (IllegalArgumentException IAE){
+            LOGGER.error(IAE.getMessage());
+            return new ResponseEntity(new AppException(HttpStatus.CONFLICT.value(), "не действительный вид транспорта"), HttpStatus.CONFLICT);
+        }
     }
 
     @Operation(summary="получение информации о транспортном средстве по id")
@@ -87,17 +96,21 @@ public class AdminTransportController {
 
     @Operation(summary="изменение транспортного средства по id")
     @PutMapping("/{id}")
-    public ResponseEntity updateTransportById(@PathVariable("id") Long id, CreateTransportAdminRequest createTransportAdminRequest){
+    public ResponseEntity updateTransportById(@PathVariable("id") Long id, @RequestBody CreateTransportAdminRequest createTransportAdminRequest){
         LOGGER.info("UPDATE TRANSPORT BY ID");
         try{
-//        transportService.updateTransportForAdmin(id, createTransportAdminRequest);
-        ETransportType.valueOf(createTransportAdminRequest.getTransportType().toUpperCase());
+        transportService.updateTransportForAdmin(id, createTransportAdminRequest);
+
         return ResponseEntity.ok("транспортное средство изменено");
         }
         catch (java.lang.IllegalArgumentException IAE){
             LOGGER.error(IAE.getMessage());
             return new ResponseEntity<>(new AppException(HttpStatus.CONFLICT.value(), "не действительный вид транспорта"), HttpStatus.CONFLICT);
+        }
 
+        catch (AccountNotExistsException AEE){
+            LOGGER.error(AEE.getMessage());
+            return new ResponseEntity<>(new AppException(HttpStatus.CONFLICT.value(), "не найден аккаунт владельца транспорта"), HttpStatus.CONFLICT);
         }
     }
 

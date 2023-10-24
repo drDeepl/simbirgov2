@@ -21,15 +21,32 @@ public class TransportSerializer extends StdSerializer<Transport> {
         jsonGenerator.writeStartObject();
         jsonGenerator.writeNumberField("id", transport.getId());
         jsonGenerator.writeNumberField("ownerId", transport.getOwnerId().getId());
-        jsonGenerator.writeBooleanField("canBeRentedet", transport.getCanBeRented());
+        jsonGenerator.writeStringField("transportType", transport.getTransportType().toUpperCase());
+        jsonGenerator.writeBooleanField("canBeRented", transport.getCanBeRented());
         jsonGenerator.writeStringField("model", transport.getModel());
         jsonGenerator.writeStringField("color", transport.getColor());
         jsonGenerator.writeStringField("identifier", transport.getIdentifier());
-        jsonGenerator.writeStringField("description", transport.getDescription());
+        if(transport.getDescription() == null){
+            jsonGenerator.writeNullField("description");
+        }
+        else{
+            jsonGenerator.writeStringField("description", transport.getDescription());
+        }
         jsonGenerator.writeNumberField("latitude", transport.getLatitude());
         jsonGenerator.writeNumberField("longitude", transport.getLongitude());
-        jsonGenerator.writeNumberField("minutePrice", transport.getMinutePrice());
-        jsonGenerator.writeNumberField("dayPrice", transport.getDayPrice());
+        if(transport.getMinutePrice() == null){
+            jsonGenerator.writeNullField("minutePrice");
+        }
+        else{
+            jsonGenerator.writeNumberField("minutePrice", transport.getMinutePrice());
+        }
+        if(transport.getDayPrice() == null){
+            jsonGenerator.writeNullField("dayPrice");
+        }
+        else {
+            jsonGenerator.writeNumberField("dayPrice", transport.getDayPrice());
+        }
+
         jsonGenerator.writeEndObject();
 
 

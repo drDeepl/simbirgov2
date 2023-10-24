@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.simbirgo.dtos.TransportDTO;
 import ru.simbirgo.exceptions.AccountExistsException;
+import ru.simbirgo.exceptions.AccountNotExistsException;
 import ru.simbirgo.exceptions.TransportNotExistsException;
 import ru.simbirgo.models.Account;
 import ru.simbirgo.models.ETransportType;
@@ -17,6 +18,7 @@ import ru.simbirgo.repositories.AccountRepository;
 import ru.simbirgo.repositories.TransportRepository;
 import ru.simbirgo.repositories.interfaces.TransportI;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -56,7 +58,7 @@ public class TransportService {
     public Transport updateTransportForAdmin(Long id, CreateTransportAdminRequest createTransportAdminRequest){
         LOGGER.info("UPDATE TRANSPORT FOR ADMIN");
         ETransportType transportType = ETransportType.valueOf(createTransportAdminRequest.getTransportType().toUpperCase());
-        Account owner = accountRepository.findById(createTransportAdminRequest.getOwnerId()).orElseThrow(() -> new AccountExistsException("аккаунт владельца не найден"));
+        Account owner = accountRepository.findById(createTransportAdminRequest.getOwnerId()).orElseThrow(() -> new AccountNotExistsException("аккаунт владельца не найден"));
         Transport transport = transportRepository.findById(id).orElseThrow(() -> new TransportNotExistsException("транспорт не найден"));
         transport.setOwnerId(owner);
         transport.setCanBeRented(createTransportAdminRequest.getCanBeRented());
@@ -77,11 +79,11 @@ public class TransportService {
         transportRepository.deleteById(id);
     }
 
+
     public List<Transport> findTransports(int start, int count, String transportType){
         LOGGER.info("FIND TRANSPORTS");
         Pageable pageable = PageRequest.of(start, count);
         ETransportType typeTransport = ETransportType.valueOf(transportType.toUpperCase());
-
        return transportRepository.findAllByTransportType(transportType,pageable);
     }
 

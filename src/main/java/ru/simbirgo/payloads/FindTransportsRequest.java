@@ -9,5 +9,5 @@ import ru.simbirgo.models.ETransportType;
 public class FindTransportsRequest {
     private int start;
     private int count;
-    private ETransportType transportType;
+    private String transportType;
 }
