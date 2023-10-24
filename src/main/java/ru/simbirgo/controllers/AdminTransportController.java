@@ -1,7 +1,9 @@
 package ru.simbirgo.controllers;
 
+import com.google.common.base.Throwables;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,7 @@ import ru.simbirgo.services.AccountService;
 import ru.simbirgo.services.TransportService;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -56,8 +59,13 @@ public class AdminTransportController {
     public ResponseEntity<List<Transport>> findTransports(@RequestBody FindTransportsRequest findTransportsRequest){
         LOGGER.info("FIND TRANSPORTS");
         try{
-        List<Transport> transports = transportService.findTransports(findTransportsRequest.getStart(), findTransportsRequest.getCount(), findTransportsRequest.getTransportType());
-        return  ResponseEntity.ok(transports);
+            if(StringUtils.equals(findTransportsRequest.getTransportType().toLowerCase(),"all")){
+                List<Transport> transportsAllTypes = transportService.findAllTypeTransports(findTransportsRequest.getStart(), findTransportsRequest.getCount());
+                return ResponseEntity.ok(transportsAllTypes);
+            }
+            List<Transport> transports = transportService.findTransports(findTransportsRequest.getStart(), findTransportsRequest.getCount(), findTransportsRequest.getTransportType());
+            return  ResponseEntity.ok(transports);
+
         }
         catch (IllegalArgumentException IAE){
             LOGGER.error(IAE.getMessage());
@@ -80,16 +88,25 @@ public class AdminTransportController {
 
     @Operation(summary="создание транспортного средства")
     @PostMapping("")
-    public ResponseEntity createTransport(@RequestBody CreateTransportAdminRequest createTransportAdminRequest){
+    public ResponseEntity createTransport(@RequestBody CreateTransportAdminRequest createTransportAdminRequest) {
         LOGGER.info("CREATE TRANSPORT");
-        try{
-        Transport createdTransport = transportService.createTransport(createTransportAdminRequest);
-        return new ResponseEntity<>(createdTransport, HttpStatus.OK);
-        }
-        catch (IllegalArgumentException IAE){
+        try {
+            Transport createdTransport = transportService.createTransport(createTransportAdminRequest);
+            return new ResponseEntity<>(createdTransport, HttpStatus.OK);
+        } catch (IllegalArgumentException IAE) {
             LOGGER.error(IAE.getMessage());
             return new ResponseEntity<>(new AppException(HttpStatus.CONFLICT.value(), "не действительный вид транспорта"), HttpStatus.CONFLICT);
+        } catch (RuntimeException re) {
+            Throwable rootCause = Throwables.getRootCause(re);
+            if (rootCause instanceof SQLException) {
+                if ("23502".equals(((SQLException) rootCause).getSQLState())) {
+                    return new ResponseEntity(new AppException(HttpStatus.CONFLICT.value(), "пропущены обязательные поля"), HttpStatus.CONFLICT);
+                }
+
+            }
         }
+
+        return new ResponseEntity(new AppException(HttpStatus.CONFLICT.value(), "что-то пошло не так"), HttpStatus.CONFLICT);
     }
 
 
@@ -112,6 +129,14 @@ public class AdminTransportController {
             LOGGER.error(AEE.getMessage());
             return new ResponseEntity<>(new AppException(HttpStatus.CONFLICT.value(), "не найден аккаунт владельца транспорта"), HttpStatus.CONFLICT);
         }
+    }
+
+    @Operation(summary = "удаление транспортного средства")
+    @DeleteMapping("/{id}")
+    public ResponseEntity deleteTransportById(@PathVariable("id") Long id){
+        LOGGER.info("DELETE TRANSPORT BY ID");
+        transportService.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

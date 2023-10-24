@@ -30,16 +30,16 @@ public class Transport {
     private Boolean canBeRented;
 
 //    @Enumerated(EnumType.STRING)
-    @Column(name="transport_type")
+    @Column(name="transport_type", nullable = false)
     private String transportType;
 
-    @Column
+    @Column(nullable = false)
     private String model;
 
-    @Column
+    @Column(nullable = false)
     private String color;
 
-    @Column
+    @Column(nullable = false)
     private String identifier;
 
     @Column(name="description")
@@ -48,7 +48,7 @@ public class Transport {
     @Column
     private Double latitude;
 
-    @Column
+    @Column(nullable = false)
     private Double longitude;
 
     @Column(name="minute_price")

@@ -39,7 +39,7 @@ public class TransportService {
         Transport transport = new Transport();
         transport.setOwnerId(ownerAccount);
         transport.setCanBeRented(createTransportAdminRequest.getCanBeRented());
-        transport.setTransportType(createTransportAdminRequest.getTransportType());
+        transport.setTransportType(createTransportAdminRequest.getTransportType().toUpperCase());
         transport.setModel(createTransportAdminRequest.getModel());
         transport.setColor(createTransportAdminRequest.getColor());
         transport.setIdentifier(createTransportAdminRequest.getIdentifier());
@@ -62,7 +62,7 @@ public class TransportService {
         Transport transport = transportRepository.findById(id).orElseThrow(() -> new TransportNotExistsException("транспорт не найден"));
         transport.setOwnerId(owner);
         transport.setCanBeRented(createTransportAdminRequest.getCanBeRented());
-        transport.setTransportType(createTransportAdminRequest.getTransportType());
+        transport.setTransportType(createTransportAdminRequest.getTransportType().toUpperCase());
         transport.setModel(createTransportAdminRequest.getModel());
         transport.setColor(createTransportAdminRequest.getColor());
         transport.setIdentifier(createTransportAdminRequest.getIdentifier());
@@ -83,8 +83,14 @@ public class TransportService {
     public List<Transport> findTransports(int start, int count, String transportType){
         LOGGER.info("FIND TRANSPORTS");
         Pageable pageable = PageRequest.of(start, count);
-        ETransportType typeTransport = ETransportType.valueOf(transportType.toUpperCase());
-       return transportRepository.findAllByTransportType(transportType,pageable);
+
+       return transportRepository.findAllByTransportType(transportType.toUpperCase(),pageable);
+    }
+
+    public List<Transport> findAllTypeTransports(int start, int count){
+        LOGGER.info("FIND ALL TYPES TRANSPORTS");
+        Pageable pageable = PageRequest.of(start, count);
+        return transportRepository.findAllTransports(pageable);
     }
 
 }
