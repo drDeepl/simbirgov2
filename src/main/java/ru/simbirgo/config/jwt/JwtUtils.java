@@ -27,17 +27,19 @@ public class JwtUtils {
 
     public String generateJwtToken(AccountDetailsImpl accountPrincipal) {
         boolean isAdminAccount = accountPrincipal.getAuthorities().toArray()[0] == "ROLE_ADMIN";
-        return generateTokenFromUsername(accountPrincipal.getUsername(), isAdminAccount);
+        long accountId = accountPrincipal.getId();
+        return generateTokenFromUsername(accountPrincipal.getUsername(), isAdminAccount, accountId);
     }
 
-    public String generateTokenFromUsername(String username, boolean isAdmin) {
+    public String generateTokenFromUsername(String username, boolean isAdmin, Long accountId) {
         final Date createdDate = new Date();
         final Date expirationDate = new Date((new Date()).getTime() + jwtExpirationMs);
         Claims claims = Jwts.claims().setSubject(username);
+        claims.put("id", accountId);
         claims.put("isAdmin", isAdmin);
         return Jwts.builder()
-                .setClaims(claims)
                 .setSubject(username).setIssuedAt(createdDate)
+                .setClaims(claims)
                 .setExpiration(expirationDate)
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
@@ -70,6 +72,13 @@ public class JwtUtils {
         String accountRole = accountDetails.getAuthorities().toArray()[0].toString();
         boolean isAdmin = StringUtils.equals(accountRole, "ROLE_ADMIN");
         return isAdmin;
+    }
+
+    public Long getAccountIdFromJWT(String token){
+
+       String accountId = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("id").toString();
+
+       return Long.parseLong(accountId);
     }
 
 

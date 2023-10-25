@@ -88,11 +88,11 @@ public class AdminTransportController {
 
     @Operation(summary="создание транспортного средства")
     @PostMapping("")
-    public ResponseEntity createTransport(@RequestBody CreateTransportAdminRequest createTransportAdminRequest) {
+    public ResponseEntity<?> createTransport(@RequestBody CreateTransportAdminRequest createTransportAdminRequest) {
         LOGGER.info("CREATE TRANSPORT");
         try {
-            Transport createdTransport = transportService.createTransport(createTransportAdminRequest);
-            return new ResponseEntity<>(createdTransport, HttpStatus.OK);
+            Transport createdTransport = transportService.createTransportForAdmin(createTransportAdminRequest);
+            return new ResponseEntity<Transport>(createdTransport, HttpStatus.OK);
         } catch (IllegalArgumentException IAE) {
             LOGGER.error(IAE.getMessage());
             return new ResponseEntity<>(new AppException(HttpStatus.CONFLICT.value(), "не действительный вид транспорта"), HttpStatus.CONFLICT);
@@ -113,12 +113,11 @@ public class AdminTransportController {
 
     @Operation(summary="изменение транспортного средства по id")
     @PutMapping("/{id}")
-    public ResponseEntity updateTransportById(@PathVariable("id") Long id, @RequestBody CreateTransportAdminRequest createTransportAdminRequest){
+    public ResponseEntity<?> updateTransportById(@PathVariable("id") Long id, @RequestBody CreateTransportAdminRequest createTransportAdminRequest){
         LOGGER.info("UPDATE TRANSPORT BY ID");
         try{
-        transportService.updateTransportForAdmin(id, createTransportAdminRequest);
-
-        return ResponseEntity.ok("транспортное средство изменено");
+        Transport updatedTransport = transportService.updateTransportForAdmin(id, createTransportAdminRequest);
+        return new ResponseEntity<Transport>(updatedTransport, HttpStatus.OK);
         }
         catch (java.lang.IllegalArgumentException IAE){
             LOGGER.error(IAE.getMessage());

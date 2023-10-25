@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.*;
 import ru.simbirgo.config.jwt.JwtUtils;
 import ru.simbirgo.dtos.AccountDTO;
@@ -88,7 +89,7 @@ public class AccountController {
                 .map(refreshTokenService::verifyExpiration)
                 .map(RefreshToken::getAccount)
                 .map(account -> {
-                    String token = jwtUtils.generateTokenFromUsername(account.getUsername(), account.getIsAdmin());
+                    String token = jwtUtils.generateTokenFromUsername(account.getUsername(), account.getIsAdmin(), account.getId());
                     return ResponseEntity.ok(new TokenRefreshDTO(token, requestRefreshToken));
                 })
                 .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
@@ -118,7 +119,7 @@ public class AccountController {
 
     @PutMapping("/update")
 
-    public ResponseEntity <?> updateAccount(@RequestBody UpdateAccountRequest updateAccountRequest){
+    public ResponseEntity<AppException> updateAccount(@RequestBody UpdateAccountRequest updateAccountRequest){
         LOGGER.info("UPDATE");
         AccountDetailsImpl accountDetails = (AccountDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         accountDetails.getUsername();
@@ -127,11 +128,12 @@ public class AccountController {
             Account account = accountService.updateAccount(accountDetails.getUsername(), updateAccountRequest.getUsername(), encoder.encode(updateAccountRequest.getPassword()));
             refreshTokenService.deleteByUserId(account.getId());
             LOGGER.info("REFRESH DELETED");
-
-            return ResponseEntity.ok(new MessageDTO("аккаунт успешно обновлён"));
+            refreshTokenService.createRefreshToken(account.getId());
+            return new ResponseEntity<>(new AppException(HttpStatus.CONFLICT.value(), "аккаунт успешно изменен"), HttpStatus.OK);
         }
         catch(AccountExistsException e){
             return new ResponseEntity<>(new AppException(HttpStatus.CONFLICT.value(), String.format("аккаунт с именем пользователя %s уже существует")), HttpStatus.CONFLICT);
+
         }
 
     }

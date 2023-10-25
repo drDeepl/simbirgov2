@@ -22,6 +22,9 @@ public interface TransportRepository extends JpaRepository<Transport, Long> {
     @Query(value = "SELECT * FROM transports", nativeQuery = true)
     List<Transport> findAllTransports(Pageable pageable);
 
+    @Query(value = "SELECT owner_id_id FROM transports WHERE id = :transportId", nativeQuery = true)
+    Long findOwnerIdByTransportId(@Param("transportId") Long transportId);
+
 
 
 

@@ -1,13 +1,12 @@
 package ru.simbirgo.payloads;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import ru.simbirgo.models.ETransportType;
+import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Data
-public class CreateTransportAdminRequest {
-    private Long ownerId;
-    
+@NoArgsConstructor
+public class CreateTransportUserRequest {
     private Boolean canBeRented;
 
     private String transportType;
@@ -22,9 +21,6 @@ public class CreateTransportAdminRequest {
     private Double latitude;
 
     private Double longitude;
-
     private Double minutePrice;
-
     private Double dayPrice;
-
 }

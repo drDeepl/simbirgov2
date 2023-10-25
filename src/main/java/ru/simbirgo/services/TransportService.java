@@ -1,5 +1,6 @@
 package ru.simbirgo.services;
 
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import ru.simbirgo.models.Account;
 import ru.simbirgo.models.ETransportType;
 import ru.simbirgo.models.Transport;
 import ru.simbirgo.payloads.CreateTransportAdminRequest;
+import ru.simbirgo.payloads.CreateTransportUserRequest;
 import ru.simbirgo.repositories.AccountRepository;
 import ru.simbirgo.repositories.TransportRepository;
 import ru.simbirgo.repositories.interfaces.TransportI;
@@ -31,23 +33,24 @@ public class TransportService {
     @Autowired
     private AccountRepository accountRepository;
 
-    public Transport createTransport(CreateTransportAdminRequest createTransportAdminRequest) throws IllegalArgumentException{
+    @Autowired
+    private ModelMapper modelMapper;
+
+    public Transport createTransportForAdmin(CreateTransportAdminRequest createTransportAdminRequest) throws IllegalArgumentException{
         LOGGER.info("CREATE TRANSPORT");
-        ETransportType transportType = ETransportType.valueOf(createTransportAdminRequest.getTransportType().toUpperCase());
+        ETransportType.valueOf(createTransportAdminRequest.getTransportType().toUpperCase());
         long ownerId = createTransportAdminRequest.getOwnerId();
         Account ownerAccount = accountRepository.findById(ownerId).orElseThrow(() -> new AccountExistsException(String.format("аккаунт с id %s не найден", ownerId)));
-        Transport transport = new Transport();
+        Transport transport = modelMapper.map(createTransportAdminRequest, Transport.class);
         transport.setOwnerId(ownerAccount);
-        transport.setCanBeRented(createTransportAdminRequest.getCanBeRented());
-        transport.setTransportType(createTransportAdminRequest.getTransportType().toUpperCase());
-        transport.setModel(createTransportAdminRequest.getModel());
-        transport.setColor(createTransportAdminRequest.getColor());
-        transport.setIdentifier(createTransportAdminRequest.getIdentifier());
-        transport.setDescription(createTransportAdminRequest.getDescription());;
-        transport.setLatitude(createTransportAdminRequest.getLatitude());
-        transport.setLongitude(createTransportAdminRequest.getLongitude());
-        transport.setMinutePrice(createTransportAdminRequest.getMinutePrice());
-        transport.setDayPrice(createTransportAdminRequest.getDayPrice());
+        return transportRepository.save(transport);
+    }
+
+    public Transport createTransportForUser(CreateTransportUserRequest createTransportUserRequest, Long ownerId){
+        ETransportType.valueOf(createTransportUserRequest.getTransportType().toUpperCase());
+        Transport transport = modelMapper.map(createTransportUserRequest, Transport.class);
+        Account accountOwner = accountRepository.findById(ownerId).orElseThrow(() -> new AccountNotExistsException(String.format("аккаунт владельца с id %s не найден", ownerId)));
+        transport.setOwnerId(accountOwner);
         return transportRepository.save(transport);
     }
 
@@ -57,20 +60,21 @@ public class TransportService {
 
     public Transport updateTransportForAdmin(Long id, CreateTransportAdminRequest createTransportAdminRequest){
         LOGGER.info("UPDATE TRANSPORT FOR ADMIN");
-        ETransportType transportType = ETransportType.valueOf(createTransportAdminRequest.getTransportType().toUpperCase());
+        ETransportType.valueOf(createTransportAdminRequest.getTransportType().toUpperCase());
         Account owner = accountRepository.findById(createTransportAdminRequest.getOwnerId()).orElseThrow(() -> new AccountNotExistsException("аккаунт владельца не найден"));
-        Transport transport = transportRepository.findById(id).orElseThrow(() -> new TransportNotExistsException("транспорт не найден"));
+        Transport transport = modelMapper.map(createTransportAdminRequest, Transport.class);
+        transport.setId(id);
         transport.setOwnerId(owner);
-        transport.setCanBeRented(createTransportAdminRequest.getCanBeRented());
-        transport.setTransportType(createTransportAdminRequest.getTransportType().toUpperCase());
-        transport.setModel(createTransportAdminRequest.getModel());
-        transport.setColor(createTransportAdminRequest.getColor());
-        transport.setIdentifier(createTransportAdminRequest.getIdentifier());
-        transport.setDescription(createTransportAdminRequest.getDescription());
-        transport.setLatitude(createTransportAdminRequest.getLatitude());
-        transport.setLongitude(createTransportAdminRequest.getLongitude());
-        transport.setMinutePrice(createTransportAdminRequest.getMinutePrice());
-        transport.setDayPrice(createTransportAdminRequest.getDayPrice());
+        return transportRepository.save(transport);
+    }
+
+    public Transport updateTransportUserReq(Long transportId, Long ownerId, CreateTransportUserRequest transportForUpdate){
+        LOGGER.info("UPDATE TRANSPORT USER REQ");
+        ETransportType.valueOf(transportForUpdate.getTransportType().toUpperCase());
+        Transport transport = modelMapper.map(transportForUpdate, Transport.class);
+        transport.setId(transportId);
+        Account owner = accountRepository.findById(ownerId).get();
+        transport.setOwnerId(owner);
         return transportRepository.save(transport);
     }
 
