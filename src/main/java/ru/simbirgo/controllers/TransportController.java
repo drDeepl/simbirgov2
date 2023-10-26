@@ -3,6 +3,9 @@ package ru.simbirgo.controllers;
 
 import com.google.common.base.Throwables;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -13,8 +16,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import ru.simbirgo.config.jwt.JwtUtils;
+import ru.simbirgo.dtos.TransportDTO;
 import ru.simbirgo.exceptions.AppException;
 import ru.simbirgo.exceptions.TransportNotExistsException;
+import ru.simbirgo.models.Rent;
 import ru.simbirgo.models.Transport;
 import ru.simbirgo.payloads.CreateTransportUserRequest;
 import ru.simbirgo.repositories.TransportRepository;
@@ -42,7 +47,8 @@ public class TransportController {
     JwtUtils jwtUtils;
 
 
-    @Operation(summary = "получение транпсорта по его id")
+    @Operation(summary = "получение транспорта по его id")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = TransportDTO.class))})
     @GetMapping("/{id}")
     public ResponseEntity<?> getTransportById(@PathVariable("id") Long id) {
         LOGGER.info("GET TRANSPORT BY ID");
@@ -55,6 +61,7 @@ public class TransportController {
     }
 
     @Operation(summary = "добавление нового транспорта")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = TransportDTO.class))})
     @PostMapping("")
     public ResponseEntity<?> addNewTransport(@RequestBody CreateTransportUserRequest createTransportUserRequest, HttpServletRequest httpServletRequest) {
         LOGGER.info("ADD NEW TRANSPORT");
@@ -81,6 +88,7 @@ public class TransportController {
     }
 
 
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = TransportDTO.class))})
     @Operation(summary="изменение транспорта по его id")
     @PutMapping("/{id}")
     public ResponseEntity<?>  updateTransportById(@PathVariable("id") Long transportId, @RequestBody CreateTransportUserRequest updateTransportUserRequest, HttpServletRequest httpServletRequest){

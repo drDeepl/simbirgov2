@@ -1,5 +1,9 @@
 package ru.simbirgo.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -16,6 +20,7 @@ import ru.simbirgo.dtos.MessageDTO;
 import ru.simbirgo.exceptions.AccountExistsException;
 import ru.simbirgo.exceptions.AppException;
 import ru.simbirgo.models.Account;
+import ru.simbirgo.models.Rent;
 import ru.simbirgo.payloads.SignUpAdminRequest;
 import ru.simbirgo.payloads.UpdateAccountAdminRequest;
 import ru.simbirgo.payloads.UpdateAccountRequest;
@@ -49,27 +54,20 @@ public class AdminAccountController {
     @Autowired
     RefreshTokenService refreshTokenService;
 
+
+    @Operation(summary="получение списка аккаунтов")
     @GetMapping("")
-    public ResponseEntity<?> getAccounts(){
+    public ResponseEntity<List<AccountI>> getAccounts(){
         LOGGER.info("GET ACCOUNTS");
-
-        try{
-            List<AccountI> accounts = accountService.getAccounts();
-            return new ResponseEntity<>(accounts, HttpStatus.OK);
-
-        }
-        catch (Exception e){
-            return new ResponseEntity<>(new AppException(HttpStatus.CONFLICT.value(), "что-то пошло не так"), HttpStatus.CONFLICT);
-        }
-
+        List<AccountI> accounts = accountService.getAccounts();
+        return new ResponseEntity<>(accounts, HttpStatus.OK);
     }
 
+    @Operation(summary="создание аккаунта")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = MessageDTO.class))})
     @PostMapping("")
     public ResponseEntity<?> createAccount(@RequestBody SignUpAdminRequest signUpAdminRequest){
         LOGGER.info("CREATE ACCOUNT");
-//        if (accountRepository.existsByUsername(signUpAdminRequest.getUsername())) {
-//            return ResponseEntity.badRequest().body(new MessageDTO("Пользователь с таким именем уже существует"));
-//        }
 
         try{
             if(accountRepository.existsByUsername(signUpAdminRequest.getUsername())){
@@ -88,6 +86,9 @@ public class AdminAccountController {
         }
     }
 
+
+    @Operation(summary = "обновление данных аккаунта по id")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = MessageDTO.class))})
     @PutMapping("/{id}")
     public ResponseEntity <?> updateAccountForAdmin(@PathVariable long id, @RequestBody UpdateAccountAdminRequest updateAccountAdminRequest ){
         LOGGER.info("UPDATE");
@@ -101,8 +102,6 @@ public class AdminAccountController {
         if(account != null){
             return new ResponseEntity<>(new AppException(HttpStatus.CONFLICT.value(), String.format("аккаунт с именем %s уже существует", updateAccountAdminRequest.getUsername())), HttpStatus.CONFLICT);
         }
-
-
 
         try{
             accountService.updateAccountById(
@@ -118,6 +117,8 @@ public class AdminAccountController {
         }
     }
 
+    @Operation(summary = "удаление аккаунта по id")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = MessageDTO.class))})
     @DeleteMapping("/{id}")
     public ResponseEntity <?> deleteAccount(@PathVariable long id) {
         if(!accountRepository.existsById(id)){

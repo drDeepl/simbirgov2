@@ -97,4 +97,11 @@ public class TransportService {
         return transportRepository.findAllTransports(pageable);
     }
 
+    public void updateLongitudeAndLatitude(Long transportId, Double longitude, Double latitude){
+        LOGGER.info("UPDATE LONGITUTE AND LATITUDE OF TRANSPORT");
+        Transport transport = transportRepository.findById(transportId).orElseThrow(() -> new TransportNotExistsException(String.format("транспорт с id %s не найден", transportId)));
+        transport.setLongitude(longitude);
+        transport.setLatitude(latitude);
+    }
+
 }

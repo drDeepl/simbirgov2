@@ -1,5 +1,9 @@
 package ru.simbirgo.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +27,7 @@ import ru.simbirgo.exceptions.AppException;
 import ru.simbirgo.exceptions.TokenRefreshException;
 import ru.simbirgo.models.Account;
 import ru.simbirgo.models.RefreshToken;
+import ru.simbirgo.models.Rent;
 import ru.simbirgo.payloads.SignInRequest;
 import ru.simbirgo.payloads.SignUpRequest;
 import ru.simbirgo.payloads.TokenRefreshRequest;
@@ -56,7 +61,9 @@ public class AccountController {
     @Autowired
     RefreshTokenService refreshTokenService;
 
+    @Operation(summary="вход в аккаунт")
     @PostMapping("/signin")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = JwtDTO.class))})
     public ResponseEntity<?> authenticateUser(@RequestBody SignInRequest signInRequest) {
         LOGGER.info("SIGNIN");
         Authentication authentication = authenticationManager
@@ -69,6 +76,8 @@ public class AccountController {
         return ResponseEntity.ok(new JwtDTO(jwt, refreshToken.getToken()));
     }
 
+    @Operation(summary="регистрация аккаунта")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = MessageDTO.class))})
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody SignUpRequest signUpRequest) {
         if (accountRepository.existsByUsername(signUpRequest.getUsername())) {
@@ -82,6 +91,8 @@ public class AccountController {
         return ResponseEntity.ok(new MessageDTO("Пользователь зарегистирован!"));
     }
 
+    @Operation(summary="получение refresh token")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = TokenRefreshDTO.class))})
     @PostMapping("/refreshtoken")
     public ResponseEntity<?> refreshtoken(@RequestBody TokenRefreshRequest request) {
         String requestRefreshToken = request.getRefreshToken();
@@ -96,6 +107,8 @@ public class AccountController {
                         "Refresh token не найден"));
     }
 
+    @Operation(summary="выход из аккаунта")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = MessageDTO.class))})
     @PostMapping("/signout")
     public ResponseEntity<?> logoutAccount() {
         AccountDetailsImpl accountDetails = (AccountDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -104,6 +117,8 @@ public class AccountController {
         return ResponseEntity.ok(new MessageDTO("Выход прошел успешно!"));
     }
 
+    @Operation(summary = "получение данных о текущем аккаунте")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = AccountDTO.class))})
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentAccountInfo(){
         AccountDetailsImpl accountDetails = (AccountDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -117,8 +132,9 @@ public class AccountController {
         return new ResponseEntity<>(new AppException(HttpStatus.NOT_FOUND.value(), "данные не найдены"), HttpStatus.NOT_FOUND);
     }
 
+    @Operation(summary="обновление данных об аккаунте")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = AppException.class))})
     @PutMapping("/update")
-
     public ResponseEntity<AppException> updateAccount(@RequestBody UpdateAccountRequest updateAccountRequest){
         LOGGER.info("UPDATE");
         AccountDetailsImpl accountDetails = (AccountDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

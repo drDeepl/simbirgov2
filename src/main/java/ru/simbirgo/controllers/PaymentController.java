@@ -1,6 +1,9 @@
 package ru.simbirgo.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.simbirgo.config.jwt.JwtUtils;
 import ru.simbirgo.dtos.MessageDTO;
 import ru.simbirgo.exceptions.AppException;
+import ru.simbirgo.models.Transport;
 import ru.simbirgo.repositories.AccountRepository;
 import ru.simbirgo.services.AccountDetailsImpl;
 import ru.simbirgo.services.AccountService;
@@ -32,6 +36,7 @@ public class PaymentController {
     @Autowired
     JwtUtils jwtUtils;
 
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = MessageDTO.class))})
     @Operation(summary="добавление 250 000 денежных единиц к текущему балансу аккаунта")
     @PostMapping("/hesoyam/{accountId}")
     public ResponseEntity<?> addedBalanceToAccount(@PathVariable long accountId){

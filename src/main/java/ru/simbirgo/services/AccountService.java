@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.simbirgo.controllers.AdminAccountController;
 import ru.simbirgo.dtos.AccountDTO;
 import ru.simbirgo.exceptions.AccountExistsException;
+import ru.simbirgo.exceptions.AccountNotExistsException;
 import ru.simbirgo.models.Account;
 import ru.simbirgo.repositories.AccountRepository;
 import ru.simbirgo.repositories.interfaces.AccountI;
@@ -32,6 +33,11 @@ public class AccountService {
         account.setUsername(updateUsername);
         account.setPassword(password);
         return accountRepository.save(account);
+    }
+
+    public Account getAccountById(Long id){
+        LOGGER.info("GET ACCOUNT BY ID");
+        return accountRepository.findById(id).orElseThrow(() -> new AccountNotExistsException(String.format("аккаунта с id %s не существует", id)));
     }
 
     public List<AccountI> getAccounts(){

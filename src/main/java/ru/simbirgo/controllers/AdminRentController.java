@@ -1,0 +1,133 @@
+package ru.simbirgo.controllers;
+
+import com.google.common.base.Throwables;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+import ru.simbirgo.config.jwt.JwtUtils;
+import ru.simbirgo.exceptions.AccountNotExistsException;
+import ru.simbirgo.exceptions.AppException;
+import ru.simbirgo.exceptions.RentNotExistsException;
+import ru.simbirgo.exceptions.TransportNotExistsException;
+import ru.simbirgo.models.Rent;
+import ru.simbirgo.payloads.CreateRentAdminRequest;
+import ru.simbirgo.payloads.EndRentAdminRequest;
+import ru.simbirgo.repositories.RentRepository;
+import ru.simbirgo.repositories.TransportRepository;
+import ru.simbirgo.services.RentService;
+import ru.simbirgo.services.TransportService;
+
+import java.sql.SQLException;
+import java.util.List;
+
+@Tag(name="AdminRentController")
+@CrossOrigin(origins = "*", maxAge = 3600)
+@RestController
+@PreAuthorize("hasRole('ROLE_ADMIN')")
+@RequestMapping("/api/admin")
+public class AdminRentController {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(AdminRentController.class);
+
+    @Autowired
+    RentRepository rentRepository;
+
+    @Autowired
+    RentService rentService;
+
+    @Autowired
+    JwtUtils jwtUtils;
+
+    @Operation(summary="создание новой аренды")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = Rent.class))})
+    @PostMapping("/rent")
+    public ResponseEntity<?> createNewRent(@RequestBody CreateRentAdminRequest createRentAdminRequest){
+        LOGGER.info("CREATE NEW RENT");
+        LOGGER.error(createRentAdminRequest.getTransportId().toString());
+        try {
+            return new ResponseEntity<>(rentService.createRent(createRentAdminRequest), HttpStatus.OK);
+        }
+        catch (IllegalArgumentException IAE){
+            LOGGER.error(IAE.getMessage());
+            return new ResponseEntity(new AppException(HttpStatus.CONFLICT.value(), "не действительный priceType"), HttpStatus.CONFLICT);
+        }
+        catch (AccountNotExistsException ANE){
+            LOGGER.error(ANE.getMessage());
+            return new ResponseEntity(new AppException(HttpStatus.NOT_FOUND.value(), ANE.getMessage()), HttpStatus.NOT_FOUND);
+
+        }
+
+        catch (TransportNotExistsException TNE){
+            LOGGER.error(TNE.getMessage());
+            return new ResponseEntity(new AppException(HttpStatus.NOT_FOUND.value(), TNE.getMessage()), HttpStatus.NOT_FOUND);
+
+        }
+
+        catch (RuntimeException re) {
+            Throwable rootCause = Throwables.getRootCause(re);
+            if (rootCause instanceof SQLException) {
+                if ("23502".equals(((SQLException) rootCause).getSQLState())) {
+                    return new ResponseEntity(new AppException(HttpStatus.CONFLICT.value(), "пропущены обязательные поля"), HttpStatus.CONFLICT);
+                }
+
+            }
+        }
+
+        return new ResponseEntity<>(new AppException(HttpStatus.CONFLICT.value(), "что-то пошло не так"), HttpStatus.CONFLICT);
+    }
+
+    @Operation(summary = "получение информации по аренде по id")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = Rent.class))})
+    @GetMapping("/rent/{id}")
+    public ResponseEntity<?> getInfoRent(@PathVariable("id") Long id){
+        LOGGER.info("GET INFO RENT");
+        try {
+            return new ResponseEntity<Rent>(rentService.findById(id), HttpStatus.OK);
+        }
+        catch (RentNotExistsException RNE){
+            return new ResponseEntity<AppException>(new AppException(HttpStatus.NOT_FOUND.value(), RNE.getMessage()),HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @Operation(summary = "получение истории аренд пользователя с id={userId}")
+    @GetMapping("/user_history/{userId}")
+    public ResponseEntity<List<Rent>> getInfoRentHistoryOfUser(@PathVariable("userId") Long id){
+        LOGGER.info("GET INFO RENT HISTORY OF USER");
+        List<Rent> rents = rentService.findRentsByAccountId(id);
+        return new ResponseEntity<List<Rent>>(rents, HttpStatus.OK);
+    }
+
+    @Operation(summary = "получение истории аренд транспорта с id={transportId}")
+    @GetMapping("/transport_history/{transportId}")
+    public ResponseEntity<List<Rent>> getInfoRentHistoryOfTransport(@PathVariable("transportId") Long id){
+        LOGGER.info("GET INFO RENT HISTORY OF USER");
+        List<Rent> rents = rentService.findRentsByTransportId(id);
+        return new ResponseEntity<List<Rent>>(rents, HttpStatus.OK);
+    }
+
+    @Operation(summary="завершение аренды транспорта по id аренды")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = Rent.class))})
+    @PostMapping("/rent/end/{rentId}")
+    public ResponseEntity<?> endRentById(@PathVariable("rentId") Long rentId, @RequestBody EndRentAdminRequest endRentAdminRequest){
+        LOGGER.info("TO END RENT BY ID");
+        try {
+            Rent updatedRent = rentService.endRentById(rentId, endRentAdminRequest);
+            return new ResponseEntity<>(updatedRent, HttpStatus.OK);
+        }
+        catch (RentNotExistsException RNE){
+            LOGGER.error(RNE.getMessage());
+            return new ResponseEntity<>(new AppException(HttpStatus.NOT_FOUND.value(), RNE.getMessage()), HttpStatus.NOT_FOUND);
+        }
+    }
+}

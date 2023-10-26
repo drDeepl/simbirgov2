@@ -2,10 +2,14 @@ package ru.simbirgo.controllers;
 
 import com.google.common.base.Throwables;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -14,13 +18,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import ru.simbirgo.config.jwt.JwtUtils;
+import ru.simbirgo.dtos.ErrorMessageDTO;
 import ru.simbirgo.dtos.MessageDTO;
 import ru.simbirgo.dtos.TransportDTO;
-import ru.simbirgo.exceptions.AccountExistsException;
-import ru.simbirgo.exceptions.AccountNotExistsException;
-import ru.simbirgo.exceptions.AppException;
-import ru.simbirgo.exceptions.TransportNotExistsException;
+import ru.simbirgo.exceptions.*;
 import ru.simbirgo.models.ETransportType;
+import ru.simbirgo.models.Rent;
 import ru.simbirgo.models.Transport;
 import ru.simbirgo.payloads.CreateTransportAdminRequest;
 import ru.simbirgo.payloads.FindTransportsRequest;
@@ -54,7 +57,9 @@ public class AdminTransportController {
     @Autowired
     JwtUtils jwtUtils;
 
+
     @Operation(summary="получение списка всех транспортных средств")
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @GetMapping("")
     public ResponseEntity<List<Transport>> findTransports(@RequestBody FindTransportsRequest findTransportsRequest){
         LOGGER.info("FIND TRANSPORTS");
@@ -73,6 +78,7 @@ public class AdminTransportController {
         }
     }
 
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @Operation(summary="получение информации о транспортном средстве по id")
     @GetMapping("/{id}")
     public ResponseEntity<Transport> getTransportById(@PathVariable("id") Long id){
@@ -87,6 +93,8 @@ public class AdminTransportController {
     }
 
     @Operation(summary="создание транспортного средства")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = TransportDTO.class))})
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @PostMapping("")
     public ResponseEntity<?> createTransport(@RequestBody CreateTransportAdminRequest createTransportAdminRequest) {
         LOGGER.info("CREATE TRANSPORT");
@@ -111,7 +119,10 @@ public class AdminTransportController {
 
 
 
+
     @Operation(summary="изменение транспортного средства по id")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = TransportDTO.class))})
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @PutMapping("/{id}")
     public ResponseEntity<?> updateTransportById(@PathVariable("id") Long id, @RequestBody CreateTransportAdminRequest createTransportAdminRequest){
         LOGGER.info("UPDATE TRANSPORT BY ID");
@@ -131,6 +142,7 @@ public class AdminTransportController {
     }
 
     @Operation(summary = "удаление транспортного средства")
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @DeleteMapping("/{id}")
     public ResponseEntity deleteTransportById(@PathVariable("id") Long id){
         LOGGER.info("DELETE TRANSPORT BY ID");
