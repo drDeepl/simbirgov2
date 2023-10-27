@@ -104,4 +104,15 @@ public class TransportService {
         transport.setLatitude(latitude);
     }
 
+    public List<Transport> findTransportByParams(Double lat, Double lng, Double radius){
+        LOGGER.info("find transport by params");
+
+        return transportRepository.findTransportByParams(lat,lng, radius);
+    }
+
+    public List<Transport>  findTransportByParamsFilterType(Double lat, Double lng, Double radius, String transportType){
+        LOGGER.info("FIND TRANSPORTS BY PARAMS AND FILTER TRANSPORT TYPE");
+        return transportRepository.findTransportByParamsFilterTransportType(lat,lng, radius, transportType);
+    }
+
 }

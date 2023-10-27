@@ -25,6 +25,15 @@ public interface TransportRepository extends JpaRepository<Transport, Long> {
     @Query(value = "SELECT owner_id_id FROM transports WHERE id = :transportId", nativeQuery = true)
     Long findOwnerIdByTransportId(@Param("transportId") Long transportId);
 
+    @Query(value="SELECT * FROM transports WHERE acos(sin(radians(:lat)) * sin(radians(latitude)) + cos(radians(:lat)) * cos(radians(latitude)) * cos( radians(:lng) - radians(longitude))) * 6371 <= :radius",
+            nativeQuery = true)
+    List<Transport> findTransportByParams(@Param("lat") Double lat, @Param("lng") Double lng, Double radius);
+
+    @Query(value="SELECT * FROM transports WHERE acos(sin(radians(:lat)) * sin(radians(latitude)) + cos(radians(:lat)) * cos(radians(latitude)) * cos( radians(:lng) - radians(longitude))) * 6371 <= :radius AND transport_type = :transportType",
+            nativeQuery = true)
+    List<Transport> findTransportByParamsFilterTransportType(@Param("lat") Double lat, @Param("lng") Double lng, Double radius, @Param("transportType") String transportType);
+
+
 
 
 
