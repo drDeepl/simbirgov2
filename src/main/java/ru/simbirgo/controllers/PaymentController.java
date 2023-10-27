@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import ru.simbirgo.config.jwt.JwtUtils;
+import ru.simbirgo.dtos.ErrorMessageDTO;
 import ru.simbirgo.dtos.MessageDTO;
 import ru.simbirgo.exceptions.AppException;
 import ru.simbirgo.models.Transport;
@@ -37,6 +38,7 @@ public class PaymentController {
     JwtUtils jwtUtils;
 
     @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = MessageDTO.class))})
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @Operation(summary="добавление 250 000 денежных единиц к текущему балансу аккаунта")
     @PostMapping("/hesoyam/{accountId}")
     public ResponseEntity<?> addedBalanceToAccount(@PathVariable long accountId){

@@ -18,10 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.*;
 import ru.simbirgo.config.jwt.JwtUtils;
-import ru.simbirgo.dtos.AccountDTO;
-import ru.simbirgo.dtos.JwtDTO;
-import ru.simbirgo.dtos.MessageDTO;
-import ru.simbirgo.dtos.TokenRefreshDTO;
+import ru.simbirgo.dtos.*;
 import ru.simbirgo.exceptions.AccountExistsException;
 import ru.simbirgo.exceptions.AppException;
 import ru.simbirgo.exceptions.TokenRefreshException;
@@ -93,6 +90,7 @@ public class AccountController {
 
     @Operation(summary="получение refresh token")
     @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = TokenRefreshDTO.class))})
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @PostMapping("/refreshtoken")
     public ResponseEntity<?> refreshtoken(@RequestBody TokenRefreshRequest request) {
         String requestRefreshToken = request.getRefreshToken();
@@ -109,6 +107,7 @@ public class AccountController {
 
     @Operation(summary="выход из аккаунта")
     @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = MessageDTO.class))})
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @PostMapping("/signout")
     public ResponseEntity<?> logoutAccount() {
         AccountDetailsImpl accountDetails = (AccountDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -119,6 +118,7 @@ public class AccountController {
 
     @Operation(summary = "получение данных о текущем аккаунте")
     @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = AccountDTO.class))})
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentAccountInfo(){
         AccountDetailsImpl accountDetails = (AccountDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -134,6 +134,7 @@ public class AccountController {
 
     @Operation(summary="обновление данных об аккаунте")
     @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = AppException.class))})
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @PutMapping("/update")
     public ResponseEntity<AppException> updateAccount(@RequestBody UpdateAccountRequest updateAccountRequest){
         LOGGER.info("UPDATE");

@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import ru.simbirgo.config.jwt.JwtUtils;
+import ru.simbirgo.dtos.ErrorMessageDTO;
 import ru.simbirgo.dtos.TransportDTO;
 import ru.simbirgo.exceptions.AppException;
 import ru.simbirgo.exceptions.TransportNotExistsException;
@@ -49,6 +50,7 @@ public class TransportController {
 
     @Operation(summary = "получение транспорта по его id")
     @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = TransportDTO.class))})
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @GetMapping("/{id}")
     public ResponseEntity<?> getTransportById(@PathVariable("id") Long id) {
         LOGGER.info("GET TRANSPORT BY ID");
@@ -62,6 +64,7 @@ public class TransportController {
 
     @Operation(summary = "добавление нового транспорта")
     @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = TransportDTO.class))})
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @PostMapping("")
     public ResponseEntity<?> addNewTransport(@RequestBody CreateTransportUserRequest createTransportUserRequest, HttpServletRequest httpServletRequest) {
         LOGGER.info("ADD NEW TRANSPORT");
@@ -89,6 +92,7 @@ public class TransportController {
 
 
     @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = TransportDTO.class))})
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @Operation(summary="изменение транспорта по его id")
     @PutMapping("/{id}")
     public ResponseEntity<?>  updateTransportById(@PathVariable("id") Long transportId, @RequestBody CreateTransportUserRequest updateTransportUserRequest, HttpServletRequest httpServletRequest){
@@ -119,6 +123,7 @@ public class TransportController {
     }
 
     @Operation(summary = "удаление транспорта по id")
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTransportByIdUserReq(@PathVariable("id") Long transportId, HttpServletRequest httpServletRequest){
         LOGGER.info("DELETE TRANSPORT BY ID");

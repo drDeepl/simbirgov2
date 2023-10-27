@@ -59,12 +59,34 @@ public class RentService {
         return rentRepository.save(rent);
     }
 
-    public Rent updateRent(UpdateRentAdminRequest updateRentAdminRequest){
+    public Rent updateRent(Long rentId, CreateRentAdminRequest createRentAdminRequest){
         LOGGER.info("UPDATE RENT");
 
-        EPriceType.valueOf(updateRentAdminRequest.getPriceType().toUpperCase());
-        Rent rent = modelMapper.map(updateRentAdminRequest, Rent.class);
-        return null;
+        EPriceType priceType = EPriceType.valueOf(createRentAdminRequest.getPriceType().toUpperCase());
+        Rent rentToUpdate = rentRepository.findById(rentId).orElseThrow(() -> new RentNotExistsException(String.format("аренды с id %s не существует", rentId)));
+
+        if(!rentToUpdate.getTransport().getId().equals(createRentAdminRequest.getTransportId())){
+            Transport transport = transportService.findById(createRentAdminRequest.getTransportId());
+            rentToUpdate.setTransport(transport);
+        }
+
+        if(!rentToUpdate.getAccount().getId().equals(createRentAdminRequest.getUserId())){
+            Account account = accountService.getAccountById(createRentAdminRequest.getUserId());
+            rentToUpdate.setAccount(account);
+        }
+
+        rentToUpdate.setTimeStart(Timestamp.valueOf(createRentAdminRequest.getTimeStart()));
+        if(createRentAdminRequest.getTimeEnd() == null){
+            rentToUpdate.setTimeEnd(null);
+        }
+        else{
+            rentToUpdate.setTimeEnd(Timestamp.valueOf(createRentAdminRequest.getTimeEnd()));
+        }
+
+        rentToUpdate.setPriceOfType(priceType.name());
+        rentToUpdate.setFinalPrice(createRentAdminRequest.getFinalPrice());
+
+        return rentRepository.save(rentToUpdate);
     }
 
     public Rent findById(Long id) throws RentNotExistsException{
@@ -86,19 +108,19 @@ public class RentService {
 
     public Rent endRentById(Long rentId, EndRentAdminRequest endRentAdminRequest){
         LOGGER.info("END RENT BY ID");
-        // INFO: Как грамотно обновить координаты транспорта и окончание аренды?
         Timestamp endTimeRent = new Timestamp(System.currentTimeMillis());
         Rent rent = rentRepository.findById(rentId).orElseThrow(() -> new RentNotExistsException(String.format("аренды с id %s не существует", rentId)));
         Transport ts = rent.getTransport();
         ts.setLongitude(endRentAdminRequest.getLng());
         ts.setLatitude(endRentAdminRequest.getLat());
-//        transportService.updateLongitudeAndLatitude(rent.getTransport().getId(), endRentAdminRequest.getLng(), endRentAdminRequest.getLat());
         rent.setTimeEnd(endTimeRent);
         rentRepository.save(rent);
         return rent;
+    }
 
-
-
+    public void deleteById(Long id){
+        LOGGER.info("DELETE BY ID");
+        rentRepository.deleteById(id);
     }
 
 

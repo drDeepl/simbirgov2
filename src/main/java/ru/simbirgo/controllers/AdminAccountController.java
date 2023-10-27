@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import ru.simbirgo.config.jwt.JwtUtils;
+import ru.simbirgo.dtos.ErrorMessageDTO;
 import ru.simbirgo.dtos.MessageDTO;
 import ru.simbirgo.exceptions.AccountExistsException;
 import ru.simbirgo.exceptions.AppException;
@@ -56,6 +57,7 @@ public class AdminAccountController {
 
 
     @Operation(summary="получение списка аккаунтов")
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @GetMapping("")
     public ResponseEntity<List<AccountI>> getAccounts(){
         LOGGER.info("GET ACCOUNTS");
@@ -65,6 +67,7 @@ public class AdminAccountController {
 
     @Operation(summary="создание аккаунта")
     @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = MessageDTO.class))})
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @PostMapping("")
     public ResponseEntity<?> createAccount(@RequestBody SignUpAdminRequest signUpAdminRequest){
         LOGGER.info("CREATE ACCOUNT");
@@ -89,6 +92,7 @@ public class AdminAccountController {
 
     @Operation(summary = "обновление данных аккаунта по id")
     @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = MessageDTO.class))})
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @PutMapping("/{id}")
     public ResponseEntity <?> updateAccountForAdmin(@PathVariable long id, @RequestBody UpdateAccountAdminRequest updateAccountAdminRequest ){
         LOGGER.info("UPDATE");
@@ -119,6 +123,7 @@ public class AdminAccountController {
 
     @Operation(summary = "удаление аккаунта по id")
     @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = MessageDTO.class))})
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @DeleteMapping("/{id}")
     public ResponseEntity <?> deleteAccount(@PathVariable long id) {
         if(!accountRepository.existsById(id)){
