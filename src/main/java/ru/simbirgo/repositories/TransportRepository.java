@@ -34,6 +34,10 @@ public interface TransportRepository extends JpaRepository<Transport, Long> {
     List<Transport> findTransportByParamsFilterTransportType(@Param("lat") Double lat, @Param("lng") Double lng, Double radius, @Param("transportType") String transportType);
 
 
+    @Query(value="SELECT * FROM transports WHERE id = :transportId AND owner_id_id = :ownerId", nativeQuery = true)
+    Transport findTransportByOwnerIdAndTransportId(@Param("ownerId") Long ownerId, @Param("transportId") Long transportId);
+
+
 
 
 

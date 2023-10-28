@@ -10,13 +10,12 @@ import ru.simbirgo.exceptions.RentNotExistsException;
 import ru.simbirgo.exceptions.TransportNotExistsException;
 import ru.simbirgo.models.*;
 import ru.simbirgo.payloads.CreateRentAdminRequest;
-import ru.simbirgo.payloads.EndRentAdminRequest;
-import ru.simbirgo.payloads.UpdateRentAdminRequest;
+import ru.simbirgo.payloads.EndRentRequest;
+import ru.simbirgo.payloads.NewRentRequest;
 
 import ru.simbirgo.repositories.RentRepository;
 
 
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -43,6 +42,7 @@ public class RentService {
         Rent rent = new Rent();
         Transport transport = transportService.findById(createRentAdminRequest.getTransportId());
         Account account = accountService.getAccountById(createRentAdminRequest.getUserId());
+        transport.setCanBeRented(false);
         rent.setAccount(account);
         rent.setTransport(transport);
         rent.setTimeStart(Timestamp.valueOf(createRentAdminRequest.getTimeStart()));
@@ -106,13 +106,14 @@ public class RentService {
         return rentsByTransportId;
     }
 
-    public Rent endRentById(Long rentId, EndRentAdminRequest endRentAdminRequest){
+    public Rent endRentById(Long rentId, EndRentRequest endRentRequest){
         LOGGER.info("END RENT BY ID");
         Timestamp endTimeRent = new Timestamp(System.currentTimeMillis());
         Rent rent = rentRepository.findById(rentId).orElseThrow(() -> new RentNotExistsException(String.format("аренды с id %s не существует", rentId)));
         Transport ts = rent.getTransport();
-        ts.setLongitude(endRentAdminRequest.getLng());
-        ts.setLatitude(endRentAdminRequest.getLat());
+        ts.setLongitude(endRentRequest.getLng());
+        ts.setLatitude(endRentRequest.getLat());
+        ts.setCanBeRented(true);
         rent.setTimeEnd(endTimeRent);
         rentRepository.save(rent);
         return rent;
@@ -126,6 +127,21 @@ public class RentService {
     public List<Rent> finByAccountIdAll(Long accountId){
         LOGGER.info("FIND RENTS BY ACCOUNT ID");
         return rentRepository.findRentsByAccountId(accountId);
+
+    }
+
+    public void newRent(Long rentAccountId, Transport transport, NewRentRequest newRentRequest){
+        LOGGER.info("NEW RENT");
+        Timestamp startTimeRent = new Timestamp(System.currentTimeMillis());
+        Account accountRent = accountService.getAccountById(rentAccountId);
+        transport.setCanBeRented(false);
+        Rent newRent = new Rent();
+        newRent.setAccount(accountRent);
+        newRent.setTransport(transport);
+        newRent.setTimeStart(startTimeRent);
+        newRent.setPriceOfType(newRentRequest.getRentType());
+        newRent.setPriceOfUnit(newRentRequest.getPriceOfUnit());
+        rentRepository.save(newRent);
 
     }
 

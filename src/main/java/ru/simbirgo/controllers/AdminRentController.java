@@ -22,9 +22,10 @@ import ru.simbirgo.exceptions.RentNotExistsException;
 import ru.simbirgo.exceptions.TransportNotExistsException;
 import ru.simbirgo.models.Rent;
 import ru.simbirgo.payloads.CreateRentAdminRequest;
-import ru.simbirgo.payloads.EndRentAdminRequest;
+import ru.simbirgo.payloads.EndRentRequest;
 import ru.simbirgo.repositories.RentRepository;
 import ru.simbirgo.services.RentService;
+import ru.simbirgo.services.TransportService;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -42,6 +43,9 @@ public class AdminRentController {
     RentRepository rentRepository;
 
     @Autowired
+    TransportService transportService;
+
+    @Autowired
     RentService rentService;
 
     @Autowired
@@ -55,7 +59,8 @@ public class AdminRentController {
         LOGGER.info("CREATE NEW RENT");
         LOGGER.error(createRentAdminRequest.getTransportId().toString());
         try {
-            return new ResponseEntity<>(rentService.createRent(createRentAdminRequest), HttpStatus.OK);
+            Rent createdRent = rentService.createRent(createRentAdminRequest);
+            return new ResponseEntity<>(createdRent, HttpStatus.OK);
         }
         catch (IllegalArgumentException IAE){
             LOGGER.error(IAE.getMessage());
@@ -122,10 +127,11 @@ public class AdminRentController {
     @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = Rent.class))})
     @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @PostMapping("/rent/end/{rentId}")
-    public ResponseEntity<?> endRentById(@PathVariable("rentId") Long rentId, @RequestBody EndRentAdminRequest endRentAdminRequest){
+    public ResponseEntity<?> endRentById(@PathVariable("rentId") Long rentId, @RequestBody EndRentRequest endRentRequest){
         LOGGER.info("TO END RENT BY ID");
         try {
-            Rent updatedRent = rentService.endRentById(rentId, endRentAdminRequest);
+            Rent updatedRent = rentService.endRentById(rentId, endRentRequest);
+
             return new ResponseEntity<>(updatedRent, HttpStatus.OK);
         }
         catch (RentNotExistsException RNE){

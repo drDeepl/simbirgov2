@@ -115,4 +115,14 @@ public class TransportService {
         return transportRepository.findTransportByParamsFilterTransportType(lat,lng, radius, transportType);
     }
 
+    public Transport findTransportByOwnerIdAndTransportId(Long ownerId, Long transportId){
+        LOGGER.info("FIND TRANSPORT BY OWNER ID");
+        return transportRepository.findTransportByOwnerIdAndTransportId(ownerId, transportId);
+    }
+
+    public void saveTransport(Transport transport){
+        LOGGER.info("TRANSPORT SAVE");
+        transportRepository.save(transport);
+    }
+
 }

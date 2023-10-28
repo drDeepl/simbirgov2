@@ -18,8 +18,12 @@ import ru.simbirgo.dtos.ErrorMessageDTO;
 import ru.simbirgo.dtos.TransportDTO;
 import ru.simbirgo.exceptions.AppException;
 import ru.simbirgo.exceptions.RentNotExistsException;
+import ru.simbirgo.models.EPriceType;
 import ru.simbirgo.models.ETransportType;
 import ru.simbirgo.models.Rent;
+import ru.simbirgo.models.Transport;
+import ru.simbirgo.payloads.EndRentRequest;
+import ru.simbirgo.payloads.NewRentRequest;
 import ru.simbirgo.payloads.RentTransportsParamsRequest;
 import ru.simbirgo.repositories.RentRepository;
 import ru.simbirgo.services.RentService;
@@ -104,5 +108,73 @@ public class RentController {
         }
     }
 
+    @Operation(summary="получение истории аренд транспорта")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", array=@ArraySchema( schema=@Schema(implementation = Rent.class)))})
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
+    @GetMapping("/transport_history/{transportId}")
+    public ResponseEntity<?> getRentHistoryByTransport(@PathVariable("transportId") Long transportId, HttpServletRequest httpServletRequest){
+        LOGGER.info("GET RENT HISTORY BY TRANSPORT");
+        try {
+            String token = httpServletRequest.getHeader("Authorization").substring(7);
+            Long currentAccountId = jwtUtils.getAccountIdFromJWT(token);
+            Transport transport = transportService.findTransportByOwnerIdAndTransportId(currentAccountId, transportId);
+            if (transport == null) {
+                return new ResponseEntity<>(new AppException(HttpStatus.FORBIDDEN.value(), "только владелец транспорта может просматривать историю аренды"), HttpStatus.FORBIDDEN);
+            }
+            return new ResponseEntity<>(rentService.findRentsByTransportId(transportId), HttpStatus.OK);
+        }
+        catch(RuntimeException e){
+            LOGGER.error(e.getMessage());
+            return new ResponseEntity<>(new AppException(HttpStatus.FORBIDDEN.value(), "что-то пошло не так"), HttpStatus.FORBIDDEN);
+
+        }
+    }
+
+    @Operation(summary="аренда транспортного средства в личное пользование")
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
+    @ApiResponse(responseCode = "403", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = AppException.class))})
+    @PostMapping("/new/{transportId}")
+    public ResponseEntity<?> getTransportInRent(@PathVariable("transportId") Long transportId, @RequestBody NewRentRequest newRentDTO, HttpServletRequest httpServletRequest){
+        LOGGER.info("GET TRANSPORT IN RENT");
+        try {
+            String token = httpServletRequest.getHeader("Authorization").substring(7);
+            Long currentAccountId = jwtUtils.getAccountIdFromJWT(token);
+            Transport transportForRent = transportService.findById(transportId);
+            if(!transportForRent.getCanBeRented()){
+                return new ResponseEntity<>(new AppException(HttpStatus.FORBIDDEN.value(), "данный транспорт уже взят в аренду"), HttpStatus.FORBIDDEN);
+
+            }
+            if (transportForRent.getOwnerId().getId().equals(currentAccountId)) {
+                return new ResponseEntity<>(new AppException(HttpStatus.FORBIDDEN.value(), "нельзя брать в аренду собственный транспорт"), HttpStatus.FORBIDDEN);
+            }
+
+            EPriceType rentType = EPriceType.valueOf(newRentDTO.getRentType().toUpperCase());
+            rentService.newRent(currentAccountId, transportForRent, newRentDTO);
+            return ResponseEntity.ok(HttpStatus.OK);
+        }
+        catch(IllegalArgumentException EAE){
+            LOGGER.info(EAE.getMessage());
+            return new ResponseEntity<>(new AppException(HttpStatus.CONFLICT.value(), "не действительный тип аренды"), HttpStatus.CONFLICT);
+        }
+        catch(RuntimeException E){
+            LOGGER.info(E.getMessage());
+            return new ResponseEntity<>(new AppException(HttpStatus.FORBIDDEN.value(), "что-то пошло не так"), HttpStatus.FORBIDDEN);
+        }
+    }
+
+    @Operation(summary="завершение аренды транспорта по id аренды")
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
+    @PostMapping("/end/{rentId}")
+    public ResponseEntity<AppException> endRentById(@PathVariable("rentId") Long rentId, @RequestBody EndRentRequest endRentRequest, HttpServletRequest httpServletRequest){
+        LOGGER.info("END RENT BY RENT ID");
+        String token = httpServletRequest.getHeader("Authorization").substring(7);
+        Long currentAccountId = jwtUtils.getAccountIdFromJWT(token);
+        Rent currentRent = rentService.findById(rentId);
+        if(currentRent.getAccount().getId().equals(currentAccountId)) {
+            rentService.endRentById(rentId, endRentRequest);
+            return new ResponseEntity<AppException>(new AppException(HttpStatus.OK.value(), "аренда транспорта завершена"), HttpStatus.OK);
+        }
+        return new ResponseEntity<AppException>(new AppException(HttpStatus.FORBIDDEN.value(), "завершить аренду может только арендатор"), HttpStatus.FORBIDDEN);
+    }
 
 }
