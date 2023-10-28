@@ -72,6 +72,7 @@ public class WebSecurityConfig {
                                 .requestMatchers("/swagger-ui/**").permitAll()
                                 .requestMatchers("/v3/**").permitAll()
                                 .requestMatchers("/swagger-ui/index.html").permitAll()
+                                .requestMatchers("/api/rent/transport").permitAll()
                                 .anyRequest().authenticated()
                 );
 

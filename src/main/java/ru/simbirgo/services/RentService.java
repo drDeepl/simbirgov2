@@ -123,5 +123,11 @@ public class RentService {
         rentRepository.deleteById(id);
     }
 
+    public List<Rent> finByAccountIdAll(Long accountId){
+        LOGGER.info("FIND RENTS BY ACCOUNT ID");
+        return rentRepository.findRentsByAccountId(accountId);
+
+    }
+
 
 }

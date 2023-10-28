@@ -2,6 +2,7 @@ package ru.simbirgo.controllers;
 
 import com.google.common.base.Throwables;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -79,8 +80,9 @@ public class AdminTransportController {
         }
     }
 
-    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @Operation(summary="получение информации о транспортном средстве по id")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", array=@ArraySchema(schema=@Schema(implementation = TransportDTO.class)))})
+    @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @GetMapping("/{id}")
     public ResponseEntity<Transport> getTransportById(@PathVariable("id") Long id){
         LOGGER.info("GET TRANSPORT BY ID");
