@@ -1,5 +1,6 @@
 package ru.simbirgo.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ public class Account {
     private String username;
 
     @Column(name="password", nullable = false)
+    @JsonIgnore
     private String password;
 
     @Column(name="balance")
