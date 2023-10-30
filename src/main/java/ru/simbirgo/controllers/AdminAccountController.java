@@ -59,7 +59,8 @@ public class AdminAccountController {
 
 
     @Operation(summary="получение списка аккаунтов")
-    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", array=@ArraySchema(schema=@Schema(implementation = Account.class)))})
+
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", array=@ArraySchema(schema=@Schema(implementation = Account.class)))}, description = "password - зашифрованный пароль")
     @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @GetMapping("")
     public ResponseEntity<List<Account>> getAccounts(){
