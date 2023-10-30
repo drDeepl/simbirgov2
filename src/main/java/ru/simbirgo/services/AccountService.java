@@ -1,5 +1,6 @@
 package ru.simbirgo.services;
 
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,9 @@ public class AccountService {
     @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
 
 
     public Account updateAccount(String currentUsername, String updateUsername, String password) throws AccountExistsException{
@@ -40,11 +44,10 @@ public class AccountService {
         return accountRepository.findById(id).orElseThrow(() -> new AccountNotExistsException(String.format("аккаунта с id %s не существует", id)));
     }
 
-    public List<AccountI> getAccounts(){
+    public List<Account> getAccounts(){
         LOGGER.info("GET ACCOUNTS");
-        List<AccountI> accounts = accountRepository.findAccounts();
+        List<Account> accounts = accountRepository.findAccounts();
         LOGGER.info("GETTING ACCOUNTS");
-
         return accounts;
     }
 

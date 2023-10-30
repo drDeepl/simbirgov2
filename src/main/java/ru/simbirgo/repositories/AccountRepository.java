@@ -20,6 +20,6 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     Boolean existsByUsername(String username);
 
 
-    @Query(value="SELECT * FROM accounts",nativeQuery=true)
-    List<AccountI> findAccounts();
+    @Query(value="SELECT * FROM accounts", nativeQuery = true)
+    List<Account> findAccounts();
 }

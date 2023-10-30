@@ -1,6 +1,7 @@
 package ru.simbirgo.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import ru.simbirgo.config.jwt.JwtUtils;
+import ru.simbirgo.dtos.AccountDTO;
 import ru.simbirgo.dtos.ErrorMessageDTO;
 import ru.simbirgo.dtos.MessageDTO;
 import ru.simbirgo.exceptions.AccountExistsException;
@@ -57,11 +59,12 @@ public class AdminAccountController {
 
 
     @Operation(summary="получение списка аккаунтов")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", array=@ArraySchema(schema=@Schema(implementation = Account.class)))})
     @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @GetMapping("")
-    public ResponseEntity<List<AccountI>> getAccounts(){
+    public ResponseEntity<List<Account>> getAccounts(){
         LOGGER.info("GET ACCOUNTS");
-        List<AccountI> accounts = accountService.getAccounts();
+        List<Account> accounts = accountService.getAccounts();
         return new ResponseEntity<>(accounts, HttpStatus.OK);
     }
 

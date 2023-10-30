@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.simbirgo.config.jwt.JwtUtils;
 import ru.simbirgo.dtos.ErrorMessageDTO;
+import ru.simbirgo.dtos.MessageDTO;
+import ru.simbirgo.dtos.RentDTO;
 import ru.simbirgo.dtos.TransportDTO;
 import ru.simbirgo.exceptions.AppException;
 import ru.simbirgo.exceptions.RentNotExistsException;
@@ -92,7 +94,7 @@ public class RentController {
     }
 
     @Operation(summary="получение истории аренд текущего аккаунта")
-    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", array=@ArraySchema( schema=@Schema(implementation = Rent.class)))})
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", array=@ArraySchema( schema=@Schema(implementation = RentDTO.class)))})
     @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @GetMapping("/my_history")
     public ResponseEntity<?>getRentsHistoryCurrentAccount(HttpServletRequest httpServletRequest){
@@ -109,7 +111,7 @@ public class RentController {
     }
 
     @Operation(summary="получение истории аренд транспорта")
-    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", array=@ArraySchema( schema=@Schema(implementation = Rent.class)))})
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", array=@ArraySchema( schema=@Schema(implementation = RentDTO.class)))})
     @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @GetMapping("/transport_history/{transportId}")
     public ResponseEntity<?> getRentHistoryByTransport(@PathVariable("transportId") Long transportId, HttpServletRequest httpServletRequest){
@@ -131,6 +133,7 @@ public class RentController {
     }
 
     @Operation(summary="аренда транспортного средства в личное пользование")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = AppException.class))})
     @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @ApiResponse(responseCode = "403", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = AppException.class))})
     @PostMapping("/new/{transportId}")
@@ -150,7 +153,7 @@ public class RentController {
 
             EPriceType rentType = EPriceType.valueOf(newRentDTO.getRentType().toUpperCase());
             rentService.newRent(currentAccountId, transportForRent, newRentDTO);
-            return ResponseEntity.ok(HttpStatus.OK);
+            return new ResponseEntity<AppException>(new AppException(HttpStatus.OK.value(), "транспорт взят в аренду"), HttpStatus.OK);
         }
         catch(IllegalArgumentException EAE){
             LOGGER.info(EAE.getMessage());
@@ -163,6 +166,7 @@ public class RentController {
     }
 
     @Operation(summary="завершение аренды транспорта по id аренды")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = AppException.class))})
     @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @PostMapping("/end/{rentId}")
     public ResponseEntity<AppException> endRentById(@PathVariable("rentId") Long rentId, @RequestBody EndRentRequest endRentRequest, HttpServletRequest httpServletRequest){

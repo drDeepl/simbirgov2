@@ -60,7 +60,7 @@ public class AdminTransportController {
 
 
     @Operation(summary="получение списка всех транспортных средств")
-    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = TransportDTO.class))})
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", array=@ArraySchema(schema=@Schema(implementation = TransportDTO.class)))})
     @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @GetMapping("")
     public ResponseEntity<List<Transport>> findTransports(@RequestBody FindTransportsRequest findTransportsRequest){
@@ -145,6 +145,7 @@ public class AdminTransportController {
     }
 
     @Operation(summary = "удаление транспортного средства")
+    @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ResponseEntity.class))})
     @ApiResponse(responseCode = "401", content = {@Content(mediaType = "application/json", schema=@Schema(implementation = ErrorMessageDTO.class))})
     @DeleteMapping("/{id}")
     public ResponseEntity deleteTransportById(@PathVariable("id") Long id){
