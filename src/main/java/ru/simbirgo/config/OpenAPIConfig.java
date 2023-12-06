@@ -36,8 +36,7 @@ public class OpenAPIConfig {
         devServer.setDescription("Server URL in Development environment");
 
         Contact contact = new Contact();
-        contact.setEmail("vlimaster@yandex.ru");
-        contact.setName("Владимир Никитин");
+
 
 
         Info info = new Info()
